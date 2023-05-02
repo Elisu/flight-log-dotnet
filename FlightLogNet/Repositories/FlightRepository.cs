@@ -24,7 +24,6 @@
             this.configuration = configuration;
         }
 
-        // TODO 2.1: Upravte metodu tak, aby vrátila pouze lety specifického typu
         public IList<FlightModel> GetAllFlights()
         {
             using var dbContext = new LocalDatabaseContext(this.configuration);
@@ -34,14 +33,38 @@
             return this.mapper.ProjectTo<FlightModel>(flights).ToList();
         }
 
-        // TODO 2.3: Vytvořte metodu, která načte letadla, která jsou ve vzduchu, seřadí je od nejstarších,
+        // 2.1: Upravte metodu tak, aby vrátila pouze lety specifického typu
+        public IList<FlightModel> GetAllFlightsOfType(FlightType type)
+        {
+            using var dbContext = new LocalDatabaseContext(this.configuration);
+
+            var flights = dbContext.Flights.Where(x => x.Type == type);
+
+            return this.mapper.ProjectTo<FlightModel>(flights).ToList();
+        }
+
+        // 2.3: Vytvořte metodu, která načte letadla, která jsou ve vzduchu, seřadí je od nejstarších,
         // a v případě shody dá vlečné pred kluzák, který táhne
+        public IList<FlightModel> GetAllPlanesInAir()
+        {
+            using var dbContext = new LocalDatabaseContext(this.configuration);
+
+            var flights = dbContext.Flights
+                .Include(flights => flights.Airplane)
+                .Include(flights => flights.Copilot)
+                .Include(flights => flights.Pilot)
+                .Where(x => x.LandingTime == null)
+                .OrderBy(x => x.TakeoffTime)
+                .OrderBy(x => x.Type);
+
+            return this.mapper.ProjectTo<FlightModel>(flights).ToList();
+        }
 
         public void LandFlight(FlightLandingModel landingModel)
         {
             using var dbContext = new LocalDatabaseContext(this.configuration);
 
-            var flight = dbContext.Flights.Find(landingModel.FlightId) 
+            var flight = dbContext.Flights.Find(landingModel.FlightId)
                          ?? throw new NotSupportedException($"Unable to land not-registered flight: {landingModel}.");
             flight.LandingTime = landingModel.LandingTime;
             dbContext.SaveChanges();
