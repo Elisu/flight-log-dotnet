@@ -13,7 +13,15 @@
 
     public class ClubUserDatabase : IClubUserDatabase
     {
-        // TODO 8.1: Přidejte si přes dependency injection configuraci 
+        // 8.1: Přidejte si přes dependency injection configuraci 
+        private readonly IConfiguration configuration;
+        private readonly IMapper _mapper;
+
+        public ClubUserDatabase(IConfiguration configuration, IMapper mapper)
+        {
+            this.configuration = configuration;
+            this._mapper = mapper;
+        }
 
         public bool TryGetClubUser(long memberId, out PersonModel personModel)
         {
@@ -30,14 +38,16 @@
 
         private IList<ClubUser> ReceiveClubUsers()
         {
-            // TODO 8.2: Naimplementujte volání endpointu ClubDB pomocí RestSharp
-
-            return null;
+            // 8.2: Naimplementujte volání endpointu ClubDB pomocí RestSharp
+            var client = new RestClient(configuration["ClubUsersApi"]);
+            var request = new RestRequest("club/user");
+            var response = client.Get<List<ClubUser>>(request);
+            return response;
         }
 
         private IList<PersonModel> TransformToPersonModel(IList<ClubUser> users)
         {
-            return null;
+            return this._mapper.Map<IList<PersonModel>>(users);
         }
     }
 }

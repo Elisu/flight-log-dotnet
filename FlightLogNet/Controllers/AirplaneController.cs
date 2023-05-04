@@ -28,7 +28,7 @@
         // Odpověď by měla být kolekce AirplaneModel
 
         [HttpGet]
-        public IEnumerable<AirplaneModel> GetPlanesInAir()
+        public IEnumerable<AirplaneModel> GetPlanes()
         {
             this.logger.LogDebug("Get airplanes.");
             return _airplaneFacade.GetClubAirplanes();
