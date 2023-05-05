@@ -1,4 +1,7 @@
-﻿namespace FlightLogNet.Operation
+﻿using System;
+using Microsoft.Extensions.Logging;
+
+namespace FlightLogNet.Operation
 {
     using System.Collections.Generic;
     using System.Globalization;
@@ -19,23 +22,50 @@
 
         public byte[] Execute()
         {
-            // TODO 5.1: Naimplementujte export do CSV
-            // TIP: CSV soubor je pouze string, který se dá vytvořit pomocí třídy StringBuilder
-            // TIP: Do bytové reprezentace je možné jej převést například pomocí metody: Encoding.UTF8.GetBytes(..)
-
             StringBuilder sb = new StringBuilder();
 
             // Write the header row to the CSV content
             sb.AppendLine("FlightId,TakeoffTime,LandingTime,Immatriculation,Type,Pilot,Copilot,Task,TowplaneID,GliderID");
 
-            // Loop through each object in the list and write its properties to a new line in the CSV content
-            var flights = flightRepository.GetAllFlights().OrderBy(x => x.TakeoffTime);
+            var flightReports = flightRepository.GetReport();
+
+            foreach (var flightReport in flightReports)
+            {
+                if (flightReport.Glider != null)
+                {
+                    sb.AppendLine(
+                        $"{flightReport.Glider.Id}," +
+                        $"{flightReport.Glider.TakeoffTime.ToString("dd.MM.yyyy HH:mm:ss")}," +
+                        $"{flightReport.Glider.LandingTime?.ToString("dd.MM.yyyy HH:mm:ss")}," +
+                        $"{flightReport.Glider.Airplane.Immatriculation}," +
+                        $"{flightReport.Glider.Airplane.Type}," +
+                        $"{flightReport.Glider.Pilot?.FirstName} {flightReport.Glider.Pilot?.LastName}," +
+                        $"{(flightReport.Glider.Copilot != null ? flightReport.Glider.Copilot.FirstName + " " + flightReport.Glider.Copilot.LastName : " ")}," +
+                        $"{flightReport.Glider.Task}," +
+                        $"{flightReport.Towplane.Id}," +
+                        $"{flightReport.Glider.Id}");
+                }
+
+                sb.AppendLine(
+                    $"{flightReport.Towplane.Id}," +
+                    $"{flightReport.Towplane.TakeoffTime.ToString("dd.MM.yyyy HH:mm:ss")}," +
+                    $"{flightReport.Towplane.LandingTime?.ToString("dd.MM.yyyy HH:mm:ss")}," +
+                    $"{flightReport.Towplane.Airplane.Immatriculation}," +
+                    $"{flightReport.Towplane.Airplane.Type}," +
+                    $"{flightReport.Towplane.Pilot?.FirstName} {flightReport.Towplane.Pilot?.LastName}," +
+                    $"{(flightReport.Towplane.Copilot != null ? flightReport.Towplane.Copilot.FirstName + " " + flightReport.Towplane.Copilot.LastName : " ")}," +
+                    $"{flightReport.Towplane.Task}," +
+                    $"{flightReport.Towplane.Id}," +
+                    $"{flightReport.Glider?.Id}");
+
+            }
+            /*
             foreach (var flight in flights)
             {
                 sb.AppendLine(
                     $"{flight.Id}," +
-                    $"{flight.TakeoffTime}," +
-                    $"{flight.LandingTime}," +
+                    $"{flight.TakeoffTime.ToString("dd.MM.yyyy HH:mm:ss")}," +
+                    $"{flight.LandingTime?.ToString("dd.MM.yyyy HH:mm:ss")}," +
                     $"{flight.Airplane.Immatriculation}," +
                     $"{flight.Airplane.Type}," +
                     $"{flight.Pilot?.FirstName} {flight.Pilot?.LastName}," +
@@ -43,7 +73,7 @@
                     $"{flight.Task}," +
                     $"{(flight.Task == "Tahac" ? flight.Id : "")}," +
                     $"{(flight.Task == "VLEK" ? flight.Id : "")}");
-            }
+            }*/
 
             // Convert the CSV content to a byte array using UTF8 encoding
             byte[] csvBytes = Encoding.UTF8.GetBytes(sb.ToString());

@@ -32,7 +32,7 @@ namespace FlightLogNet.Tests.Repositories
 
         [Fact]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "StringLiteralTypo")]
-        public void AddGuestAirplane_StateUnderTest_ExpectedBehavior()
+        public void AddGuestAirplane_ShouldAddGuestToAirplane()
         {
             // Arrange
             RenewDatabase();
@@ -51,7 +51,7 @@ namespace FlightLogNet.Tests.Repositories
         }
 
         [Fact]
-        public void GetClubAirplanes_StateUnderTest_ExpectedBehavior()
+        public void GetClubAirplanes_ShouldGetNotEmptyClubAirplanes()
         {
             // Arrange
             RenewDatabase();

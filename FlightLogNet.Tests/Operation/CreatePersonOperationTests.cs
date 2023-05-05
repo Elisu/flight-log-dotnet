@@ -1,3 +1,5 @@
+using System;
+
 namespace FlightLogNet.Tests.Operation
 {
     using FlightLogNet.Integration;
@@ -32,16 +34,13 @@ namespace FlightLogNet.Tests.Operation
         }
 
         [Fact]
-        public void Execute_ShouldReturnNull()
+        public void Execute_ShouldThrowException()
         {
             // Arrange
             var createPersonOperation = CreateCreatePersonOperation();
 
-            // Act
-            var result = createPersonOperation.Execute(null);
-
-            // Assert
-            Assert.Null(result);
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => createPersonOperation.Execute(null));
             mockRepository.VerifyAll();
         }
 
@@ -65,17 +64,64 @@ namespace FlightLogNet.Tests.Operation
             Assert.True(result > 0);
             mockRepository.VerifyAll();
         }
+        
+        [Fact]
+        public void Execute_ShouldReturnExistingClubMember()
+        {
+            // Arrange
+            var createPersonOperation = CreateCreatePersonOperation();
+            PersonModel personModel = new PersonModel
+            {
+                FirstName = "Jan", LastName = "Novák",
+                MemberId = 3
+            };
+            long id = 333;
+            mockPersonRepository.Setup(repository => 
+                repository.TryGetPerson(personModel, out id)).Returns(true);
+            
+            // Act
+            var result = createPersonOperation.Execute(personModel);
+            
+            // Assert
+            Assert.Equal(id, result);
+            mockRepository.VerifyAll();
+        }
 
         [Fact]
         public void Execute_ShouldCreateNewClubMember()
         {
             // Arrange
+            var createPersonOperation = CreateCreatePersonOperation();
+            PersonModel personModel = new PersonModel
+            {
+                Address = new AddressModel { City = "NY", PostalCode = "456", Street = "2nd Ev", Country = "USA" },
+                FirstName = "John",
+                LastName = "Smith",
+                MemberId = 1
+            };
+            
+            long id;
+            PersonModel returnedPersonModel = personModel;
+            const long expectedId = 1;
 
-            // TODO 7.1: Naimplementujte test s použitím mockù
+            mockPersonRepository.Setup(repository =>
+                    repository.TryGetPerson(personModel, out id))
+                .Returns(false);
+            
+            mockClubUserDatabase.Setup(repository => 
+                    repository.TryGetClubUser(expectedId, out returnedPersonModel))
+                .Returns(true);
+
+            mockPersonRepository.Setup(repository =>
+                repository.CreateClubMember(personModel)).Returns(expectedId);
 
             // Act
+            var result = createPersonOperation.Execute(personModel);
 
             // Assert
+            Assert.Equal(expectedId, result);
+            
+            mockRepository.VerifyAll();
 
         }
     }

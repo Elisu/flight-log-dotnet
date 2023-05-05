@@ -1,3 +1,6 @@
+using System.IO;
+using System.Reflection;
+
 namespace FlightLogNet.Tests.Operation
 {
     using System;
@@ -20,21 +23,27 @@ namespace FlightLogNet.Tests.Operation
             this.configuration = configuration;
         }
 
-        // TODO 6.1: Odstraòtì skip a doplntì test, aby otestoval vrácený CSV soubor.
-        [Fact(Skip = "Not implemented.")]
-        public void Execute_StateUnderTest_ExpectedBehavior()
+        [Fact]
+        public void Execute_ShouldCreateReportCsv()
         {
             // Arrange
             TestDatabaseGenerator.DeleteOldDatabase(this.configuration);
             DateTime fixedDate = new DateTime(2020, 1, 2, 16, 57, 10);
             TestDatabaseGenerator.CreateTestDatabaseWithFixedTime(fixedDate, this.configuration);
-            // ...
+            var expectedCsv = GetTestCsv();
 
             // Act
             var result = getExportToCsvOperation.Execute();
 
             // Assert
-            //Assert.Equal(expectedCsv, result);
+            Assert.Equal(expectedCsv, result);
+        }
+
+        private static byte[] GetTestCsv()
+        {
+            using var reader =
+                new StreamReader($@"{AppDomain.CurrentDomain.BaseDirectory}..\..\..\export.csv");
+            return Encoding.UTF8.GetBytes(reader.ReadToEnd());
         }
     }
 }

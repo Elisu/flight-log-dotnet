@@ -1,4 +1,6 @@
-﻿namespace FlightLogNet.Operation
+﻿using System;
+
+namespace FlightLogNet.Operation
 {
     using System.Collections.Generic;
 
@@ -23,7 +25,7 @@
         {
             if (personModel == null)
             {
-                return null;
+                throw new ArgumentNullException(nameof(personModel));
             }
 
             if (personModel.MemberId == GuestId)
@@ -31,9 +33,9 @@
                 return this.personRepository.AddGuestPerson(personModel);
             }
 
-            if (this.personRepository.TryGetPerson(personModel, out long airplaneId))
+            if (this.personRepository.TryGetPerson(personModel, out long personId))
             {
-                return airplaneId;
+                return personId;
             }
 
             if (this.clubUserDatabase.TryGetClubUser(personModel.MemberId, out PersonModel clubUser))
